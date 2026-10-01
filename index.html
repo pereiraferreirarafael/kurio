@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#140d0a" />
+    <meta
+      name="description"
+      content="Kurio: marketplace de NFTs com coleções selecionadas de criadores do mundo todo."
+    />
+    <title>Kurio — Marketplace de NFTs</title>
+  </head>
+  <body>
+    <div id="root"><!-- Casca estática: pinta o cabeçalho antes do JS (FCP). O React a substitui ao montar. -->
+      <header class="border-b border-border"><div class="mx-auto flex min-h-[45px] max-w-[1200px] flex-wrap items-center justify-between gap-x-6 gap-y-1 px-6 py-1 lg:flex-nowrap lg:py-0"><a class="text-body font-bold tracking-widest text-foreground lg:w-40" href="/">KURIO</a><nav aria-label="Principal" class="order-last flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-0 lg:order-none lg:w-auto lg:justify-start lg:gap-10"><a class="relative py-2 hover:text-accent font-bold text-accent after:absolute after:inset-x-0 after:-bottom-[3px] after:h-[2px] after:bg-accent" href="/">Início</a><a class="relative py-2 text-foreground hover:text-accent" href="/#mercado">Mercado</a><a class="relative py-2 text-body-lg text-foreground hover:text-accent [&amp;.active]:font-bold [&amp;.active]:text-accent [&amp;.active]:after:absolute [&amp;.active]:after:inset-x-0 [&amp;.active]:after:-bottom-[3px] [&amp;.active]:after:h-[2px] [&amp;.active]:after:bg-accent" href="/criadores">Criadores</a><a class="relative py-2 text-body-lg text-foreground hover:text-accent [&amp;.active]:font-bold [&amp;.active]:text-accent [&amp;.active]:after:absolute [&amp;.active]:after:inset-x-0 [&amp;.active]:after:-bottom-[3px] [&amp;.active]:after:h-[2px] [&amp;.active]:after:bg-accent" href="/aprenda">Aprenda</a></nav><div class="flex items-center gap-4 lg:gap-7"><button type="button" aria-label="Buscar NFTs" class="grid size-8 place-items-center text-foreground hover:text-accent"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search size-5" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button><a aria-label="Carrinho" class="grid size-8 place-items-center text-foreground hover:text-accent relative" href="/cart"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart size-6" aria-hidden="true"><path d="m2.05 2.05 1.099-.028a1 1 0 0 1 1.008.815l2.69 14.347A1 1 0 0 0 7.83 18H18"></path><path d="M4.563 5h16.435a1 1 0 0 1 .981 1.204l-1.026 6.226A2 2 0 0 1 18.962 14H6.25"></path><circle cx="18" cy="20" r="2"></circle><circle cx="8" cy="20" r="2"></circle></svg></a><a class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-bold uppercase tracking-wide transition-colors disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-accent h-8 px-3 text-caption gap-1 normal-case" href="/login"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in size-5" aria-hidden="true"><path d="m10 17 5-5-5-5"></path><path d="M15 12H3"></path><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path></svg>Entrar</a></div></div></header>
+      <main id="conteudo" class="min-h-screen"></main></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

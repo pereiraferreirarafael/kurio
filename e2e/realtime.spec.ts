@@ -8,14 +8,17 @@ test.describe('tempo real (Socket.IO)', () => {
     await waitRealtime(page)
     await page.evaluate(() => window.__kurioMock!.emitNftUpdate('emerald-ape-042', { price: '2.50' }))
     await expect(page.getByText('2.50 ETH').first()).toBeVisible()
-    await expect(page.getByText('Preço anterior')).toBeVisible()
+    await expect(page.getByRole('article').getByText('Preço anterior')).toBeVisible()
   })
 
   test('evento duplicado e evento antigo não alteram o estado', async ({ page }) => {
     await page.goto('/nft/emerald-ape-042')
     await waitRealtime(page)
-    await page.evaluate(() => window.__kurioMock!.emitNftUpdate('emerald-ape-042', { price: '3.00' }, { duplicate: true }))
-    await expect(page.getByText('3.00 ETH').first()).toBeVisible()
+    // O servidor simulado pode emitir antes do handshake do cliente terminar: reenvia até a UI refletir.
+    await expect(async () => {
+      await page.evaluate(() => window.__kurioMock!.emitNftUpdate('emerald-ape-042', { price: '3.00' }, { duplicate: true }))
+      await expect(page.getByText('3.00 ETH').first()).toBeVisible({ timeout: 1500 })
+    }).toPass({ timeout: 15_000 })
     await page.evaluate(() => window.__kurioMock!.emitNftUpdate('emerald-ape-042', {}, { stale: true }))
     await page.waitForTimeout(300)
     await expect(page.getByText('3.00 ETH').first()).toBeVisible()

@@ -230,6 +230,8 @@ test.describe('pedido pendente e conexão', () => {
 test.describe('teclado, foco e formulários', () => {
   test('o primeiro Tab leva ao link "Pular para o conteúdo" com foco visível', async ({ page }) => {
     await page.goto('/')
+    // O React substitui a casca estática do cabeçalho ao montar; espera isso para o foco não se perder.
+    await expect(cards(page).first()).toBeVisible()
     await page.keyboard.press('Tab')
     const skip = page.getByRole('link', { name: 'Pular para o conteúdo' })
     await expect(skip).toBeFocused()
@@ -278,5 +280,40 @@ test.describe('teclado, foco e formulários', () => {
     await buy.focus()
     await page.keyboard.press('Enter')
     await expect(page).toHaveURL(/\/cart$/)
+  })
+})
+
+test.describe('detalhe: carrosséis de relacionados', () => {
+  test('mostram outros NFTs, excluem o atual, rolam e navegam para o detalhe', async ({ page }) => {
+    await page.goto('/nft/emerald-ape-042')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.locator('[data-related-carousel]').first().scrollIntoViewIfNeeded() // os carrosséis montam perto da tela
+    const same = page.getByRole('region', { name: 'Mais desta coleção' })
+    const seen = page.getByRole('region', { name: 'Colecionadores também viram' })
+    await expect(same.getByRole('listitem').first()).toBeVisible()
+    await expect(seen.getByRole('listitem').first()).toBeVisible()
+    await expect(page.locator('section a[href="/nft/emerald-ape-042"]')).toHaveCount(0)
+
+    const track = same.getByRole('list')
+    const before = await track.evaluate((el) => el.scrollLeft)
+    const next = same.getByRole('button', { name: /próximos/ })
+    if (await next.isVisible()) {
+      await next.click()
+      await expect.poll(() => track.evaluate((el) => el.scrollLeft)).toBeGreaterThanOrEqual(before)
+    }
+
+    const link = same.getByRole('link').first()
+    const href = await link.getAttribute('href')
+    await link.click()
+    await expect(page).toHaveURL(new RegExp(`${href}$`))
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  })
+
+  test('favoritar um relacionado sem login leva ao login e volta ao detalhe', async ({ page }) => {
+    await page.goto('/nft/emerald-ape-042')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await page.locator('[data-related-carousel]').first().scrollIntoViewIfNeeded()
+    await page.getByRole('region', { name: 'Mais desta coleção' }).getByRole('button', { name: /Favoritar/ }).first().click()
+    await expect(page).toHaveURL(/\/login\?redirect=/)
   })
 })

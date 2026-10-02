@@ -153,8 +153,8 @@ O build inclui três otimizações dirigidas pelo Lighthouse móvel (simulação
 - `modulepreload` dos chunks do caminho crítico (mocks + `msw/browser` + rota da home), que antes eram
   descobertos em série após a execução do entry.
 
-Medição final (relatórios em `docs/lighthouse/`, detalhes e justificativa no README): mobile 80 (home) e 79 (detalhe),
-desktop 99 — o mobile ficou abaixo da meta 90 depois de levar a home completa do Figma. Experimentos descartados por não melhorarem a nota: casca estática do hero, adiar seções
+Medição final (relatórios em `docs/lighthouse/`, detalhes e justificativa no README): mobile 72 (home) e 80 (detalhe),
+desktop 98–99 — o mobile ficou abaixo da meta 90 depois de levar a home completa do Figma. Experimentos descartados por não melhorarem a nota: casca estática do hero, adiar seções
 abaixo da dobra, `content-visibility`, adiar o entry até o primeiro pintar e remover o preload de fontes. O gargalo
 no simulador é LCP/FCP (custo de JS + layout), não bloqueio de thread (TBT 90–140 ms).
 
@@ -201,7 +201,7 @@ CLS é tratado com esqueletos de altura fixa (filtros da home; corpo do detalhe 
 - **Newsletter** do rodapé: `POST /newsletter` no MSW, com validação e mensagem de sucesso/erro.
 - **Hero no mobile**: a imagem é ocultada para priorizar o conteúdo e o desempenho.
 - **Busca**: o campo continua na barra lateral de filtros (o Figma só mostra o ícone no cabeçalho, que leva a ele).
-- **Carrossel de produtos relacionados** do detalhe: não implementado.
+- **Carrosséis do detalhe** ("Mais desta coleção" e "Colecionadores também viram"): rolagem nativa com *scroll-snap* e botões anterior/próximo, sem biblioteca; usam `GET /nfts` (coleção e aba `trending`), excluem o NFT atual e permitem favoritar.
 - **Mobile de Perfil, Carteiras e Confirmação**: o Figma não traz quadros mobile dessas telas; o layout foi
   derivado dos tokens e do desktop.
 - **Cabeçalho mobile** quebra em duas linhas (logo + ação / navegação) para caber com sessão iniciada.

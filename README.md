@@ -145,7 +145,7 @@ npx playwright show-report        # relatório HTML (traces/screenshots/vídeos 
 - `e2e/coverage.spec.ts`: ordenação e histórico do navegador, filtros combinados, esqueletos com resposta lenta
   (e `prefers-reduced-motion`), clique duplo em pagar, sessão expirada no checkout, checkout com carteira
   cadastrada, queda do Socket.IO com pedido pendente (`__kurioMock.dropConnections()`), reload com pedido
-  pendente, *skip link*, foco do diálogo (trap, Esc, retorno), `aria-invalid`/`aria-describedby` e compra por teclado.
+  pendente, *skip link*, foco do diálogo (trap, Esc, retorno), `aria-invalid`/`aria-describedby` e compra por teclado e carrosséis de relacionados.
 - `e2e/responsive.spec.ts`: 390/768/1440 px e zoom de 200 % sem rolagem horizontal, em páginas públicas e privadas.
 - Regressão visual em `e2e/visual.spec.ts` (home, detalhe, login, cadastro, carrinho, pagamento, perfil e carteiras) em 390, 768 e 1440 px, com *baselines* em `e2e/__screenshots__/<projeto>/`.
 
@@ -179,15 +179,15 @@ Medianas de 3 execuções:
 
 | Página | Dispositivo | Perf | A11y | BP | SEO | LCP | TBT | CLS |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Home | mobile | **80** | 100 | 100 | 100 | 3,6 s | 311 ms | 0 |
-| Home | desktop | 99 | 100 | 100 | 100 | 0,8 s | 7 ms | 0 |
-| Detalhe | mobile | **79** | 100 | 100 | 100 | 3,4 s | 337 ms | 0 |
-| Detalhe | desktop | 99 | 100 | 100 | 100 | 0,9 s | 14 ms | 0,007 |
+| Home | mobile | **72** | 100 | 100 | 100 | 3,6 s | 506 ms | 0 |
+| Home | desktop | 99 | 100 | 100 | 100 | 0,8 s | 5 ms | 0 |
+| Detalhe | mobile | **80** | 100 | 100 | 100 | 3,4 s | 313 ms | 0 |
+| Detalhe | desktop | 98 | 100 | 100 | 100 | 0,8 s | 0 ms | 0 |
 
 ### Justificativa: Performance no mobile abaixo de 90
 
-A meta de Performance **não foi atingida no mobile** (home 80, detalhe 79); Acessibilidade, Boas práticas e SEO
-passam em todas as páginas e o desktop passa em tudo. As notas oscilam ±5 pontos entre execuções no simulador,
+A meta de Performance **não foi atingida no mobile** (home 72, detalhe 80); Acessibilidade, Boas práticas e SEO
+passam em todas as páginas e o desktop passa em tudo. As notas oscilam até ±8 pontos entre execuções e baterias no simulador (a home variou de 72 a 82 sem mudar o código),
 então a diferença para 90 é maior que o ruído. O que o relatório mostra:
 
 - **Home**: o LCP é o parágrafo do hero. TTFB é 15 ms e o *element render delay* é ~1,3 s: o texto só existe depois
@@ -198,7 +198,8 @@ então a diferença para 90 é maior que o ruído. O que o relatório mostra:
 - **Causa estrutural**: é uma SPA com renderização no cliente e um "servidor" MSW que precisa subir (Service Worker +
   handlers) antes da primeira resposta de API. Em produção real, SSR/pré-renderização e CDN resolveriam LCP; aqui o desafio
   exige SPA com MSW.
-- **TBT** de 300–340 ms vem da inicialização do MSW e da hidratação das listas sob CPU 4×; no desktop é ≤ 14 ms.
+- **TBT** de 300–500 ms vem da inicialização do MSW e da hidratação das listas sob CPU 4×; no desktop é ≤ 14 ms.
+- Os carrosséis do detalhe só montam e buscam dados perto da tela (`IntersectionObserver`) e reservam a altura (CLS 0); sem isso o detalhe mobile caiu para 65.
 - Já aplicado: CSS embutido, fontes só `latin`, casca estática do cabeçalho, `modulepreload` dos chunks críticos,
   Socket.IO e MSW carregados dinamicamente, imagens WebP com `width`/`height` e versões menores para os cartões, CLS 0.
   Experimentos descartados por não melhorarem a nota: casca estática do hero, adiar seções abaixo da dobra,

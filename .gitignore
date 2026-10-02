@@ -6,3 +6,7 @@ lighthouse-reports
 .env
 .tanstack
 *.tsbuildinfo
+
+.vercel
+.env*
+!.env.example

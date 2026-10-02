@@ -5,7 +5,7 @@ comunicação é feita por REST (Axios) e Socket.IO real contra uma API **simula
 roda sem nenhum back-end.
 
 - Decisões de arquitetura, contratos, política de sessão, cache e reconciliação REST ↔ Socket: [ARCHITECTURE.md](./ARCHITECTURE.md)
-- Demonstração pública: `<URL do deploy>` (mocks ligados)
+- Demonstração pública: <https://kurio-ivory.vercel.app> (mocks ligados; login de teste na seção "Contas de teste")
 
 ## Stack
 
@@ -157,7 +157,7 @@ npx playwright show-report        # relatório HTML (traces/screenshots/vídeos 
 ```bash
 npm run lighthouse                       # home e detalhe, mobile e desktop, mediana de 3
 LH_RUNS=1 npm run lighthouse             # execução rápida
-LH_URL=https://seu-deploy npm run lighthouse
+LH_URL=https://kurio-ivory.vercel.app npm run lighthouse
 ```
 
 Saída em `lighthouse-reports/` (JSON + HTML por execução e `median-summary.json`; pasta ignorada pelo Git).
@@ -204,7 +204,7 @@ então a diferença para 90 é maior que o ruído. O que o relatório mostra:
   Socket.IO e MSW carregados dinamicamente, imagens WebP com `width`/`height` e versões menores para os cartões, CLS 0.
   Experimentos descartados por não melhorarem a nota: casca estática do hero, adiar seções abaixo da dobra,
   `content-visibility`, adiar o entry até o primeiro pintar, remover preload de fontes.
-- Rode contra o deploy para medir o que o avaliador vê: `LH_URL=https://seu-deploy npm run lighthouse`.
+- Rode contra o deploy para medir o que o avaliador vê: `LH_URL=https://kurio-ivory.vercel.app npm run lighthouse`.
 
 ## Deploy
 

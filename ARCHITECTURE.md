@@ -153,8 +153,8 @@ O build inclui três otimizações dirigidas pelo Lighthouse móvel (simulação
 - `modulepreload` dos chunks do caminho crítico (mocks + `msw/browser` + rota da home), que antes eram
   descobertos em série após a execução do entry.
 
-Medição final: mobile 82 (home) e 86 (detalhe), desktop 99 — o mobile ficou abaixo da meta 90 depois de levar a home
-completa do Figma. Experimentos descartados por não melhorarem a nota: casca estática do hero, adiar seções
+Medição final (relatórios em `docs/lighthouse/`, detalhes e justificativa no README): mobile 80 (home) e 79 (detalhe),
+desktop 99 — o mobile ficou abaixo da meta 90 depois de levar a home completa do Figma. Experimentos descartados por não melhorarem a nota: casca estática do hero, adiar seções
 abaixo da dobra, `content-visibility`, adiar o entry até o primeiro pintar e remover o preload de fontes. O gargalo
 no simulador é LCP/FCP (custo de JS + layout), não bloqueio de thread (TBT 90–140 ms).
 
@@ -169,16 +169,19 @@ CLS é tratado com esqueletos de altura fixa (filtros da home; corpo do detalhe 
   e caminho claro); ao voltar, o usuário está na mesma página.
 - Formulários com validação de campo e mensagens por campo vindas do servidor (`fields`).
 - Avatar: o cliente redimensiona para 256 px JPEG antes de enviar (limite de 300 mil caracteres no contrato).
+- Checkout: lista as carteiras cadastradas na rede escolhida (a principal vem pré-selecionada) e conecta com `POST /wallet/connect { network, walletId }`; sem carteira cadastrada, conecta uma simulada e aponta para `/wallets`.
 - Carteiras: máximo de 5, a primeira é a principal, só uma principal, a principal não pode ser removida
   enquanto houver outras, rótulos únicos.
 - Acessibilidade: *skip link*, `aria-live` nas mudanças assíncronas, foco visível, contraste verificado
-  (Lighthouse a11y ≥ 97).
+  (Lighthouse a11y 100). A remoção de carteira usa um diálogo Radix (`components/ui/dialog.tsx`) com foco preso,
+  Esc e retorno do foco ao gatilho.
+- `cn()` usa `extendTailwindMerge` com os tamanhos de fonte do tema; sem isso o `tailwind-merge` tratava
+  `text-body-lg` como cor e removia `text-primary-foreground` dos botões grandes (contraste 2,5:1).
 
 ## 11. Limitações conhecidas
 
 - Voltar ao checkout com o mesmo carrinho depois de um pedido pendente pode criar outro pedido pendente
   (a idempotência protege repetições do *mesmo* envio, não intenção nova).
-- A carteira do checkout é separada das carteiras salvas em `/wallets` (o checkout não pré-seleciona a principal).
 - Falha no merge do carrinho de visitante mantém o carrinho local e não tenta novamente sozinha.
 - O aviso de "sessão expirada" sobrevive a um reload logo após a expiração (flag em `sessionStorage`).
 - Token em `localStorage` (é um mock); em produção real o ideal seria cookie `HttpOnly`.
@@ -193,7 +196,7 @@ CLS é tratado com esqueletos de altura fixa (filtros da home; corpo do detalhe 
   maior, exporte as artes do Figma e substitua os arquivos mantendo os nomes.
 - **Categorias**: o Figma lista 9 categorias; o mock tem 3 coleções (Kurio Apes, Kurio Editions, Neon Vessels).
 - **Rotas `/criadores` e `/aprenda`**: existem no menu como páginas "em breve" (sem quadro no Figma).
-- **Ícones sociais do rodapé**: letras no lugar dos ícones (o `aria-label` descreve o destino).
+- **Ícones sociais do rodapé**: letras (f, I, x, in, Y) no lugar dos ícones (o `aria-label` descreve o destino).
 - **Filtro de preço**: slider duplo aplicado ao clicar em "Aplicar" (`minPrice`/`maxPrice` na URL).
 - **Newsletter** do rodapé: `POST /newsletter` no MSW, com validação e mensagem de sucesso/erro.
 - **Hero no mobile**: a imagem é ocultada para priorizar o conteúdo e o desempenho.
@@ -202,4 +205,4 @@ CLS é tratado com esqueletos de altura fixa (filtros da home; corpo do detalhe 
 - **Mobile de Perfil, Carteiras e Confirmação**: o Figma não traz quadros mobile dessas telas; o layout foi
   derivado dos tokens e do desktop.
 - **Cabeçalho mobile** quebra em duas linhas (logo + ação / navegação) para caber com sessão iniciada.
-- **Tablet (768 px)** não tem quadro no Figma; usa o ponto de quebra `sm`/`md` do Tailwind.
+- **Tablet (768 px)** não tem quadro no Figma; usa o ponto de quebra `sm`/`md` do Tailwind e tem *baselines* próprias (`chromium-tablet`).

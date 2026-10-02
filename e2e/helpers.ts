@@ -11,6 +11,7 @@ declare global {
       emitOrderUpdate(id: string, options?: object): unknown
       settleOrder(id: string, outcome?: 'confirm' | 'decline'): unknown
       connectedClients(): number
+      dropConnections(): void
     }
   }
 }

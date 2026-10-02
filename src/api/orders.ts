@@ -3,7 +3,7 @@ import { api, toApiError } from './client'
 import {
   type CreateOrderBody,
   IDEMPOTENCY_HEADER,
-  type Network,
+  type WalletConnectBody,
   orderListSchema,
   orderSchema,
   walletConnectionSchema,
@@ -115,7 +115,7 @@ export function useCreateOrder() {
 
 export function useConnectWallet() {
   return useMutation({
-    mutationFn: async (network: Network) =>
-      walletConnectionSchema.parse((await api.post('/wallet/connect', { network })).data),
+    mutationFn: async (body: WalletConnectBody) =>
+      walletConnectionSchema.parse((await api.post('/wallet/connect', body)).data),
   })
 }

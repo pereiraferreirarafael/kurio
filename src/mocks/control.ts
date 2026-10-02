@@ -11,7 +11,7 @@ import {
   setScenarioName,
 } from './scenarios'
 import { clearOrderTimers, emitOrderUpdate, findOrder, settleOrder } from './orders'
-import { broadcast, connectedClients } from './socket'
+import { broadcast, connectedClients, dropConnections } from './socket'
 
 interface NftPatch {
   price?: EthString
@@ -98,6 +98,8 @@ export const mockControl = {
     return emitOrderUpdate(order, options)
   },
   connectedClients,
+  /** Derruba as conexões Socket.IO (o cliente reconecta e reconcilia com o REST). */
+  dropConnections,
 }
 
 declare global {

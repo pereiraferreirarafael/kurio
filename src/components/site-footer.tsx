@@ -11,10 +11,10 @@ const FEATURES = [
 
 const SOCIAL = [
   { label: 'Facebook', glyph: 'f', href: 'https://www.facebook.com' },
-  { label: 'Instagram', glyph: 'ig', href: 'https://www.instagram.com' },
+  { label: 'Instagram', glyph: 'I', href: 'https://www.instagram.com' },
   { label: 'X (Twitter)', glyph: 'x', href: 'https://x.com' },
   { label: 'LinkedIn', glyph: 'in', href: 'https://www.linkedin.com' },
-  { label: 'YouTube', glyph: 'yt', href: 'https://www.youtube.com' },
+  { label: 'YouTube', glyph: 'Y', href: 'https://www.youtube.com' },
 ] as const
 
 const listItem = 'leading-[30px]'
@@ -73,7 +73,7 @@ export function SiteFooter() {
   return (
     <footer className="mt-24">
       <div className="bg-card p-8">
-        <div className="mx-auto grid max-w-[1200px] gap-8 lg:grid-cols-[1fr_1px_1fr_1px_1fr_1px_auto]">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[1fr_1px_1fr_1px_1fr_1px_auto]">
           {FEATURES.map((f, i) => (
             <div key={f.letter} className="contents">
               {i > 0 ? <div aria-hidden="true" className="hidden bg-primary lg:block" /> : null}
@@ -107,7 +107,7 @@ export function SiteFooter() {
       </div>
 
       <div className="bg-card p-8">
-        <div className="mx-auto grid max-w-[1200px] gap-8 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_228px] lg:gap-[124px]">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-[minmax(0,1fr)] gap-8 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_228px] lg:gap-[124px]">
           <nav aria-label="Conta" className="flex flex-col gap-2">
             <h2 className={colTitle}>Meu perfil</h2>
             <ul className="text-body">

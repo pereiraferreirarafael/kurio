@@ -32,6 +32,12 @@ export default defineConfig({
       name: 'chromium-mobile',
       use: { ...devices['Pixel 7'], launchOptions },
     },
+    {
+      // Tablet (768 px): só regressão visual; a responsividade nos três tamanhos é testada em responsive.spec.ts
+      name: 'chromium-tablet',
+      testMatch: /visual\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 768, height: 1024 }, launchOptions },
+    },
   ],
   webServer: {
     // Build de produção com mocks ligados (padrão): é o mesmo artefato que vai para o deploy.

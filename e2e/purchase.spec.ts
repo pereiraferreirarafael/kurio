@@ -50,12 +50,15 @@ test.describe('carrinho', () => {
     await login(page)
     await addToCartFromDetail(page, 'emerald-ape-042', true)
     await waitRealtime(page)
-    await page.evaluate(() =>
-      window.__kurioMock!.emitNftUpdate('emerald-ape-042', {
-        availability: { 'emerald-ape-042-e1': 0, 'emerald-ape-042-e2': 0, 'emerald-ape-042-e3': 0 },
-      }),
-    )
-    await expect(page.getByText(/esgotou|Esgotado/).first()).toBeVisible()
+    // O servidor simulado pode emitir antes do cliente concluir o handshake: reenvia até a UI refletir.
+    await expect(async () => {
+      await page.evaluate(() =>
+        window.__kurioMock!.emitNftUpdate('emerald-ape-042', {
+          availability: { 'emerald-ape-042-e1': 0, 'emerald-ape-042-e2': 0, 'emerald-ape-042-e3': 0 },
+        }),
+      )
+      await expect(page.getByText(/esgotou|Esgotado/).first()).toBeVisible({ timeout: 1500 })
+    }).toPass({ timeout: 15_000 })
     await expect(page.getByRole('button', { name: 'Finalizar compra' })).toBeDisabled()
     await page.getByRole('button', { name: /Remover Emerald Ape/ }).click()
     await expect(page.getByText('Seu carrinho está vazio')).toBeVisible()

@@ -31,10 +31,17 @@ export const orderHandlers = [
     if (auth.response) return auth.response
     const body = walletConnectBodySchema.safeParse(await request.json().catch(() => null))
     if (!body.success) return apiError(422, 'VALIDATION_ERROR', 'Rede inválida.', { network: 'Escolha uma rede.' })
-    const connection: WalletConnection = {
-      network: body.data.network,
-      address: `0x${fnv(`${auth.user.id}:${body.data.network}`, 40)}`,
+    // Com walletId, conecta a carteira cadastrada (dona e rede conferidas); sem ele, gera um endereço por usuário e rede.
+    let address = `0x${fnv(`${auth.user.id}:${body.data.network}`, 40)}`
+    if (body.data.walletId) {
+      const saved = (getDb().wallets[auth.user.id] ?? []).find((w) => w.id === body.data.walletId)
+      if (!saved) return apiError(404, 'NOT_FOUND', 'Carteira não encontrada.')
+      if (saved.network !== body.data.network) {
+        return apiError(422, 'VALIDATION_ERROR', 'Essa carteira pertence a outra rede.', { network: 'Rede diferente da carteira.' })
+      }
+      address = saved.address
     }
+    const connection: WalletConnection = { network: body.data.network, address }
     return HttpResponse.json(connection)
   }),
 

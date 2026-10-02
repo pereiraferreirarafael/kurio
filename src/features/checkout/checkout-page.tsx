@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useCart, useQuote } from '@/api/cart'
 import { toApiError } from '@/api/client'
 import { type CreateOrderBody, type Network, type Quote, type WalletConnection } from '@/api/contracts'
+import { useWallets } from '@/api/account'
 import { useConnectWallet, useCreateOrder } from '@/api/orders'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { describeQuoteChanges } from '@/features/cart/quote-changes'
@@ -25,6 +26,12 @@ export function CheckoutPage() {
   const [network, setNetwork] = useState<Network>('ethereum')
   const [wallet, setWallet] = useState<WalletConnection | null>(null)
   const connect = useConnectWallet()
+  // Carteiras cadastradas em /wallets: a principal vem pré-selecionada (se for da rede escolhida).
+  const savedWallets = useWallets().data ?? []
+  const savedOnNetwork = savedWallets.filter((w) => w.network === network)
+  const [pickedId, setPickedId] = useState<string | null>(null)
+  const selectedSaved =
+    savedOnNetwork.find((w) => w.id === pickedId) ?? savedOnNetwork.find((w) => w.isPrimary) ?? savedOnNetwork[0]
   const createOrder = useCreateOrder()
   // Última tentativa enviada: repetir após timeout reutiliza o MESMO conteúdo (e, portanto, a mesma chave).
   const [lastBody, setLastBody] = useState<CreateOrderBody | null>(null)
@@ -70,7 +77,7 @@ export function CheckoutPage() {
   }
 
   function connectWallet() {
-    connect.mutate(network, { onSuccess: setWallet })
+    connect.mutate({ network, walletId: selectedSaved?.id }, { onSuccess: setWallet })
   }
 
   function pay() {
@@ -163,7 +170,40 @@ export function CheckoutPage() {
             </div>
           ) : (
             <div className="flex flex-col items-start gap-3">
-              <p className="text-muted-foreground">Conecte uma carteira para pagar na rede escolhida.</p>
+              {savedOnNetwork.length > 0 ? (
+                <fieldset className="flex w-full flex-col gap-2">
+                  <legend className="mb-1 text-body text-muted-foreground">Carteiras cadastradas na rede escolhida</legend>
+                  {savedOnNetwork.map((w) => (
+                    <label
+                      key={w.id}
+                      className={cn(
+                        'flex cursor-pointer items-center gap-3 border px-4 py-2 text-body has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring',
+                        w.id === selectedSaved?.id ? 'border-accent' : 'border-border-strong',
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="saved-wallet"
+                        checked={w.id === selectedSaved?.id}
+                        onChange={() => setPickedId(w.id)}
+                      />
+                      <span className="font-bold">{w.label}</span>
+                      <span className="text-muted-foreground" title={w.address}>
+                        {shortAddress(w.address)}
+                      </span>
+                      {w.isPrimary ? <span className="ml-auto text-caption text-accent">Principal</span> : null}
+                    </label>
+                  ))}
+                </fieldset>
+              ) : (
+                <p className="text-muted-foreground">
+                  Nenhuma carteira cadastrada nesta rede. Conecte uma carteira simulada ou{' '}
+                  <Link to="/wallets" className="text-accent underline">
+                    cadastre uma em Carteiras
+                  </Link>
+                  .
+                </p>
+              )}
               <Button variant="outline" disabled={connect.isPending} onClick={connectWallet}>
                 {connect.isPending ? 'Aguardando a carteira…' : 'Conectar carteira'}
               </Button>

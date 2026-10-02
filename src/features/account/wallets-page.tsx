@@ -3,6 +3,7 @@ import { useAddWallet, useRemoveWallet, useSetPrimaryWallet, useWallets } from '
 import { toApiError } from '@/api/client'
 import { MAX_WALLETS, type Network, type Wallet, addWalletBodySchema } from '@/api/contracts'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { TextField } from '@/components/ui/field'
 import { apiFields, zodFields } from '@/lib/form'
 import { shortAddress } from '@/lib/money'
@@ -154,27 +155,34 @@ function WalletRow(props: {
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
-        {props.confirming ? (
-          <>
-            <Button size="sm" variant="outline" onClick={props.onRemove} aria-label={`Confirmar remoção de ${w.label}`}>
-              Confirmar remoção
-            </Button>
-            <Button size="sm" variant="ghost" onClick={props.onCancel}>
-              Cancelar
-            </Button>
-          </>
-        ) : (
-          <>
-            {!w.isPrimary ? (
-              <Button size="sm" variant="outline" disabled={props.busy} onClick={props.onPrimary} aria-label={`Tornar ${w.label} a carteira principal`}>
-                Tornar principal
-              </Button>
-            ) : null}
-            <Button size="sm" variant="ghost" disabled={props.busy} onClick={props.onAskRemove} aria-label={`Remover ${w.label}`}>
+        {!w.isPrimary ? (
+          <Button size="sm" variant="outline" disabled={props.busy} onClick={props.onPrimary} aria-label={`Tornar ${w.label} a carteira principal`}>
+            Tornar principal
+          </Button>
+        ) : null}
+        <Dialog open={props.confirming} onOpenChange={(open) => (open ? props.onAskRemove() : props.onCancel())}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="ghost" disabled={props.busy} aria-label={`Remover ${w.label}`}>
               Remover
             </Button>
-          </>
-        )}
+          </DialogTrigger>
+          <DialogContent>
+            <DialogTitle className="text-body-lg font-bold">Remover carteira?</DialogTitle>
+            <DialogDescription className="text-body text-muted-foreground">
+              {w.label} ({NETWORK_LABEL[w.network]}) será removida da sua conta. Essa ação não pode ser desfeita.
+            </DialogDescription>
+            <div className="flex flex-wrap justify-end gap-2">
+              <DialogClose asChild>
+                <Button size="sm" variant="ghost">
+                  Cancelar
+                </Button>
+              </DialogClose>
+              <Button size="sm" onClick={props.onRemove} aria-label={`Confirmar remoção de ${w.label}`}>
+                Confirmar remoção
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </li>
   )

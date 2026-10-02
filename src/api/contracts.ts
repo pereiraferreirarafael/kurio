@@ -262,7 +262,8 @@ export type Quote = z.infer<typeof quoteSchema>
 
 // ---- Carteira, checkout e pedidos -----------------------------------------
 
-export const walletConnectBodySchema = z.object({ network: networkSchema })
+export const walletConnectBodySchema = z.object({ network: networkSchema, walletId: z.string().optional() })
+export type WalletConnectBody = z.infer<typeof walletConnectBodySchema>
 export const walletConnectionSchema = z.object({ address: z.string(), network: networkSchema })
 export type WalletConnection = z.infer<typeof walletConnectionSchema>
 

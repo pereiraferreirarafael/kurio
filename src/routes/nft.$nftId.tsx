@@ -34,7 +34,7 @@ function NftDetail() {
 
   if (isPending) {
     return (
-      <div className="mx-auto grid min-h-[1340px] max-w-[1200px] content-start gap-10 px-6 py-10 md:min-h-0 md:grid-cols-[1fr_1fr]" aria-busy="true">
+      <div className="mx-auto grid min-h-[1340px] max-w-[1200px] content-start gap-10 px-6 py-10 md:min-h-0 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" aria-busy="true">
         <div className="skeleton aspect-square" />
         <div className="flex flex-col gap-4">
           <div className="skeleton h-9 w-2/3" />
@@ -46,9 +46,9 @@ function NftDetail() {
   }
 
   return (
-    <article className="mx-auto grid max-w-[1200px] gap-10 px-6 py-10 md:grid-cols-[1fr_1fr]">
+    <article className="mx-auto grid max-w-[1200px] gap-10 px-6 py-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <div className="flex flex-col gap-4 sm:flex-row-reverse">
-        <div className="grid aspect-square flex-1 place-items-center bg-card">
+        <div className="grid aspect-square min-w-0 flex-1 place-items-center self-start bg-card">
           <img src={nft.gallery[selected] ?? nft.image} alt={`Arte de ${nft.name}`} width={404} height={404} className="w-[91%] max-w-[450px]" />
         </div>
         <ul className="flex gap-3 sm:flex-col">

@@ -118,6 +118,7 @@ __kurioMock.emitNftUpdate('<nftId>', {}, { duplicate: true })   // mesmo eventId
 __kurioMock.emitNftUpdate('<nftId>', {}, { stale: true })       // versão antiga (deve ser ignorada)
 __kurioMock.emitOrderUpdate('<orderId>', { duplicate: true })
 __kurioMock.connectedClients()                                  // conexões abertas
+__kurioMock.dropConnections()                                   // derruba os sockets (o cliente reconecta e reconcilia)
 ```
 
 ## Testes
@@ -136,12 +137,17 @@ npm run e2e
 npx playwright show-report        # relatório HTML (traces/screenshots/vídeos das falhas)
 ```
 
-- Dois projetos: `chromium-desktop` (1440×900) e `chromium-mobile` (Pixel 7).
+- Três projetos: `chromium-desktop` (1440×900), `chromium-mobile` (Pixel 7, 390 px) e `chromium-tablet` (768×1024, só regressão visual).
 - O `webServer` faz `npm run build` e serve o build (`vite preview`), ou seja, testa o que vai para produção.
 - Cobre: catálogo e URL, login/cadastro/logout e rota privada, favoritos com rollback, carrinho, cotação,
   compra (confirmada, recusada, pendente, timeout após criação com recuperação idempotente), perfil,
   carteiras, isolamento entre usuários e tempo real (`nft.updated`, `order.updated`, duplicata, versão antiga).
-- Regressão visual em `e2e/visual.spec.ts`, com *baselines* em `e2e/__screenshots__/<projeto>/`.
+- `e2e/coverage.spec.ts`: ordenação e histórico do navegador, filtros combinados, esqueletos com resposta lenta
+  (e `prefers-reduced-motion`), clique duplo em pagar, sessão expirada no checkout, checkout com carteira
+  cadastrada, queda do Socket.IO com pedido pendente (`__kurioMock.dropConnections()`), reload com pedido
+  pendente, *skip link*, foco do diálogo (trap, Esc, retorno), `aria-invalid`/`aria-describedby` e compra por teclado.
+- `e2e/responsive.spec.ts`: 390/768/1440 px e zoom de 200 % sem rolagem horizontal, em páginas públicas e privadas.
+- Regressão visual em `e2e/visual.spec.ts` (home, detalhe, login, cadastro, carrinho, pagamento, perfil e carteiras) em 390, 768 e 1440 px, com *baselines* em `e2e/__screenshots__/<projeto>/`.
 
 > Os *baselines* foram gerados em Chromium/Linux. Em outro sistema operacional a renderização de fontes
 > difere: rode `npx playwright test visual --update-snapshots` uma vez antes de comparar.
@@ -154,23 +160,50 @@ LH_RUNS=1 npm run lighthouse             # execução rápida
 LH_URL=https://seu-deploy npm run lighthouse
 ```
 
-Saída em `lighthouse-reports/` (JSON + HTML por execução e `median-summary.json`). O script retorna código 1
-se alguma meta não for atingida: Performance ≥ 90, Acessibilidade ≥ 95, Boas práticas ≥ 95, SEO ≥ 90.
+Saída em `lighthouse-reports/` (JSON + HTML por execução e `median-summary.json`; pasta ignorada pelo Git).
+O script retorna código 1 se alguma meta não for atingida: Performance ≥ 90, Acessibilidade ≥ 95, Boas práticas ≥ 95, SEO ≥ 90.
 
-Medianas de 3 execuções (build de produção local, cenário padrão):
+**Relatórios versionados**: `docs/lighthouse/` (HTML das 12 execuções + `median-summary.json`), gerados em 01/10/2026.
 
-| Página | Dispositivo | Perf | A11y | BP | SEO |
-| --- | --- | --- | --- | --- | --- |
-| Home | mobile | 82 | 100 | 100 | 100 |
-| Home | desktop | 99 | 100 | 100 | 100 |
-| Detalhe | mobile | 86 | 97 | 100 | 100 |
-| Detalhe | desktop | 99 | 97 | 100 | 100 |
+| Item | Valor |
+| --- | --- |
+| Lighthouse | 13.5.0 |
+| Navegador | HeadlessChrome 141 (Chromium do Playwright), `--headless=new --no-sandbox --disable-gpu` |
+| Node / SO | v22.22.2 / Linux 6.18 (container, sem outras cargas durante as execuções) |
+| Alvo | build de produção local (`vite preview`, `localhost:4173`), cenário `default` |
+| Mobile | emulação padrão do Lighthouse: Moto G Power, 4G lenta (RTT 150 ms, 1,6 Mbps), CPU 4× |
+| Desktop | preset desktop do Lighthouse (sem *throttling* adicional) |
+| Amostragem | 3 execuções por combinação; vale a mediana |
 
-> **Meta de Performance no mobile não atingida (82 na home e 86 no detalhe, meta 90).** A simulação do Lighthouse (4G lenta + CPU 4×) é
-> sensível ao custo de renderizar a home completa do Figma (hero, filtros, banners, blog, rodapé): a versão
-> anterior, com a home simplificada e arte em SVG, fazia 92. Acessibilidade, Boas práticas e SEO passam em todas as páginas;
-> desktop passa em tudo. Notas por execução oscilam ±3 perto do limite. Para medir o que o avaliador vê, rode
-> contra o deploy: `LH_URL=https://seu-deploy npm run lighthouse`.
+Medianas de 3 execuções:
+
+| Página | Dispositivo | Perf | A11y | BP | SEO | LCP | TBT | CLS |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Home | mobile | **80** | 100 | 100 | 100 | 3,6 s | 311 ms | 0 |
+| Home | desktop | 99 | 100 | 100 | 100 | 0,8 s | 7 ms | 0 |
+| Detalhe | mobile | **79** | 100 | 100 | 100 | 3,4 s | 337 ms | 0 |
+| Detalhe | desktop | 99 | 100 | 100 | 100 | 0,9 s | 14 ms | 0,007 |
+
+### Justificativa: Performance no mobile abaixo de 90
+
+A meta de Performance **não foi atingida no mobile** (home 80, detalhe 79); Acessibilidade, Boas práticas e SEO
+passam em todas as páginas e o desktop passa em tudo. As notas oscilam ±5 pontos entre execuções no simulador,
+então a diferença para 90 é maior que o ruído. O que o relatório mostra:
+
+- **Home**: o LCP é o parágrafo do hero. TTFB é 15 ms e o *element render delay* é ~1,3 s: o texto só existe depois
+  que o JS carrega, executa e o React monta. Tempo de *script evaluation* ~1,2 s sob CPU 4× (bundle de entrada
+  290 KB / 94 KB gzip + chunks de roteador, `msw/browser` e dados mock), mais ~0,7 s de *style & layout* da home completa do Figma.
+- **Detalhe**: o LCP é a imagem principal. Ela não está no HTML inicial (SPA), e só é descoberta depois que o JS monta a
+  página e a API simulada responde: ~0,76 s de *resource load delay*.
+- **Causa estrutural**: é uma SPA com renderização no cliente e um "servidor" MSW que precisa subir (Service Worker +
+  handlers) antes da primeira resposta de API. Em produção real, SSR/pré-renderização e CDN resolveriam LCP; aqui o desafio
+  exige SPA com MSW.
+- **TBT** de 300–340 ms vem da inicialização do MSW e da hidratação das listas sob CPU 4×; no desktop é ≤ 14 ms.
+- Já aplicado: CSS embutido, fontes só `latin`, casca estática do cabeçalho, `modulepreload` dos chunks críticos,
+  Socket.IO e MSW carregados dinamicamente, imagens WebP com `width`/`height` e versões menores para os cartões, CLS 0.
+  Experimentos descartados por não melhorarem a nota: casca estática do hero, adiar seções abaixo da dobra,
+  `content-visibility`, adiar o entry até o primeiro pintar, remover preload de fontes.
+- Rode contra o deploy para medir o que o avaliador vê: `LH_URL=https://seu-deploy npm run lighthouse`.
 
 ## Deploy
 

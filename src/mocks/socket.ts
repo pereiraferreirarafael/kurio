@@ -22,6 +22,8 @@ type IoClient = ReturnType<typeof toSocketIo>['client']
 const clients = new Set<IoClient>()
 /** Dono de cada conexão, definido pelo token do handshake (pacote CONNECT do Socket.IO). */
 const owners = new Map<IoClient, string | null>()
+/** Conexão bruta de cada cliente, para simular quedas (dropConnections). */
+const raw = new Map<IoClient, { close(code?: number, reason?: string): void }>()
 const PING_INTERVAL_MS = 20_000
 
 export const realtimeHandlers = [
@@ -29,6 +31,7 @@ export const realtimeHandlers = [
     const io = toSocketIo(connection)
     clients.add(io.client)
     owners.set(io.client, null)
+    raw.set(io.client, connection.client)
     // Pacote CONNECT do Socket.IO: "40" + JSON de `auth`. O binding não expõe isso.
     connection.client.addEventListener('message', (event) => {
       const data = typeof event.data === 'string' ? event.data : ''
@@ -46,6 +49,7 @@ export const realtimeHandlers = [
       clearInterval(ping)
       clients.delete(io.client)
       owners.delete(io.client)
+      raw.delete(io.client)
     })
   }),
 ]
@@ -63,4 +67,9 @@ export function emitToUser(userId: string, event: string, payload: unknown) {
 
 export function connectedClients() {
   return clients.size
+}
+
+/** Simula a queda da conexão: o servidor fecha todos os sockets e o socket.io-client reconecta sozinho. */
+export function dropConnections() {
+  raw.forEach((connection) => connection.close(1012, 'queda simulada'))
 }
